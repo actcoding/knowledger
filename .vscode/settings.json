@@ -1,0 +1,6 @@
+{
+    "emmet.includeLanguages": {
+        "blade": "html"
+    },
+    "editor.linkedEditing": true,
+}

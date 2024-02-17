@@ -1,0 +1,75 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Backend",
+            "type": "shell",
+            "command": "./artisan serve",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "group": "none"
+        },
+        {
+            "label": "Frontend",
+            "type": "shell",
+            "command": "bun run dev",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "group": "none"
+        },
+        {
+            "label": "Dev",
+            "problemMatcher": [],
+            "dependsOn": [
+                "Backend",
+                "Frontend",
+                "Open Browser"
+            ]
+        },
+
+        {
+            "label": "Open Browser",
+            "hide": true,
+            "type": "shell",
+            "command": "xdg-open http://localhost:8000",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+            },
+            "group": "none",
+        },
+        {
+            "label": "Reset database",
+            "type": "shell",
+            "command": "./artisan migrate:fresh --seed",
+            "problemMatcher": [],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+            }
+        },
+        {
+            "label": "Clear Cache",
+            "type": "shell",
+            "command": "./artisan optimize:clear",
+            "problemMatcher": [],
+            "group": "none",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+            }
+        },
+    ]
+}
