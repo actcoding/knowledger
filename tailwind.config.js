@@ -2,10 +2,15 @@
 export default {
     content: [
         "./config/*.php",
-        "./resources/**/*.blade.php",
+        "./resources/css/*.css",
+        "./resources/views/**/*.blade.php",
     ],
     theme: {
-        extend: {},
+        extend: {
+            gridTemplateColumns: {
+                'article': 'minmax(20%, 1fr) 60% 1fr',
+            }
+        },
     },
     safelist: [
         {

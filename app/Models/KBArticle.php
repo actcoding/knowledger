@@ -23,9 +23,9 @@ class KBArticle extends Model
     protected $table = 'kb_articles';
 
     protected $fillable = [
-        'title', 'subtitle',
-        'icon_mode', 'icon',
-        'header_image',
+        'documentation_id',
+        'title', 'subtitle', 'slug',
+        'icon_mode', 'icon', 'header_image',
         'content',
     ];
 

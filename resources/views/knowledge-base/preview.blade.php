@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
 
@@ -13,14 +13,14 @@
     {{-- <link rel="manifest" href="/manifest.json"> --}}
 
     @if($kb->logo !== null)
-    <link rel="apple-touch-icon" href="{{ $kb->publicLogoPath() }}">
-    <link rel="shortcut icon" href="{{ $kb->publicLogoPath() }}">
-    <link rel="preload" href="{{ $kb->publicLogoPath() }}">
+    <link rel="apple-touch-icon" href="{{ $kb->publicLogoPath() }}" as="image">
+    <link rel="shortcut icon" href="{{ $kb->publicLogoPath() }}" as="image">
+    <link rel="preload" href="{{ $kb->publicLogoPath() }}" as="image">
     @endif
 
     @vite('resources/css/app.css')
 </head>
-<body class="bg-{{ $kb->theme_color }}-100">
+<body class="bg-{{ $kb->theme_color }}-100 select-none">
 
     <div class="container mx-auto max-w-screen-xl">
         <div class="flex flex-col items-center py-16 gap-y-8">
@@ -48,9 +48,7 @@
                     <button type="button" class="text-gray-600 hover:text-gray-700">
                         <span class="sr-only">Search</span>
 
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                        </svg>
+                        @svg('heroicon-o-magnifying-glass', 'w-4 h-4')
                     </button>
                 </span>
             </div>
@@ -62,10 +60,13 @@
             <div class="grid grid-cols-4 gap-8">
             @forelse($kb->articles as $article)
                 <a
-                    class="bg-white border border-slate-200 rounded-lg py-6 px-16 drop-shadow transition-transform hover:-translate-y-2"
+                    class="bg-white border border-slate-200 rounded-lg py-6 px-16 drop-shadow transition-transform hover:-translate-y-2 flex flex-col gap-y-4 items-center"
                     href={{ route('kb.preview.article', [ 'slug' => $kb->slug, 'article' => $article->slug, ]) }}
                 >
-                    {{ $article->title }}
+                    <x-article-icon :$article small />
+                    <span class="text-xl text-center">
+                        {{ $article->title }}
+                    </span>
                 </a>
             @empty
 

@@ -13,3 +13,11 @@ body {
 .prose code::after {
     display: none;
 }
+
+.prose td {
+    vertical-align: middle;
+}
+
+.prose td img {
+    margin: 0;
+}

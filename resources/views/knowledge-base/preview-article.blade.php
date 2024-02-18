@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
 
@@ -13,8 +13,8 @@
     {{-- <link rel="manifest" href="/manifest.json"> --}}
 
     @if($kb->logo !== null)
-    <link rel="apple-touch-icon" href="{{ $kb->publicLogoPath() }}">
-    <link rel="shortcut icon" href="{{ $kb->publicLogoPath() }}">
+    <link rel="apple-touch-icon" href="{{ $kb->publicLogoPath() }}" as="image">
+    <link rel="shortcut icon" href="{{ $kb->publicLogoPath() }}" as="image">
     <link rel="preload" href="{{ $kb->publicLogoPath() }}" as="image">
     @endif
 
@@ -23,6 +23,7 @@
     @endif
 
     @vite('resources/css/app.css')
+    @vite('resources/js/preview-toc.ts')
 </head>
 <body class="bg-{{ $kb->theme_color }}-100">
 
@@ -30,8 +31,8 @@
     <img src="{{ $article->publicHeaderImagePath() }}" class="w-screen h-[384px] object-cover object-center" />
     @endif
 
-    <div class="container mx-auto max-w-screen-md my-24">
-
+    {{-- Header --}}
+    <div class="container mx-auto mt-24">
         <a
             class="
                 inline-flex items-center gap-x-3
@@ -50,19 +51,7 @@
         </a>
 
         <div class="flex flex-row gap-x-8 mt-8">
-            @if ($article->icon_mode !== null)
-                @switch($article->icon_mode)
-                @case('heroicon')
-                    @svg($article->icon, 'w-16 h-16')
-                    @break
-                @case('emoji')
-                    <p class="text-6xl">{{ $article->icon }}</p>
-                    @break
-                @case('custom')
-                    <img src="{{ asset('storage/' . $article->icon) }}" class="w-8 h-8" />
-                    @break
-                @endswitch
-            @endif
+            <x-article-icon :article="$article" />
 
             <div>
                 <p class="text-6xl font-bold">
@@ -77,13 +66,22 @@
             </div>
         </div>
 
-        <hr class="border-{{ $kb->theme_color }}-300 my-8" />
+        <hr class="border-{{ $kb->theme_color }}-300 mt-8" />
+    </div>
 
+    {{-- Main --}}
+    <main class="grid grid-cols-article gap-x-12 items-baseline mb-48 container mx-auto">
+
+        {{-- Table of Contents --}}
+        <aside class="prose sticky top-5 bg-{{ $kb->theme_color }}-50 p-4" id="toc">
+            <h2>Table of Contents</h2>
+        </aside>
+
+        {{-- Article --}}
         <x-markdown class="prose proxe-xl max-w-none">
             {!! $article->content !!}
         </x-markdown>
-
-    </div>
+    </main>
 
 </body>
 </html>

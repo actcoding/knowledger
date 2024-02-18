@@ -3,7 +3,9 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Layouts\Column;
+use App\Filament\Layouts\Wrapper;
 use App\Filament\Resources\KBArticleResource\Pages;
+use App\Models\Documentation;
 use App\Models\KBArticle;
 use BladeUI\Icons\Factory;
 use Filament\Forms\Components\FileUpload;
@@ -14,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -23,6 +26,7 @@ use Filament\Tables\Table;
 use Guava\FilamentIconPicker\Forms\IconPicker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class KBArticleResource extends Resource
 {
@@ -38,13 +42,6 @@ class KBArticleResource extends Resource
 
     public static function form(Form $form): Form
     {
-        /** @var Factory */
-        $iconFactory = app(Factory::class);
-
-        $icons = collect($iconFactory->all())
-            ->keys()
-            ->toArray();
-
         return $form
             ->schema([
                 Grid::make(2)
@@ -53,9 +50,40 @@ class KBArticleResource extends Resource
                             ->columnSpan(1)
                             ->description('General Information')
                             ->schema([
+                                Select::make('documentation_id')
+                                    ->native(false)
+                                    ->live(debounce: 500)
+                                    ->searchable()
+                                    ->preload()
+                                    ->relationship(name: 'knowledgeBase', titleAttribute: 'name'),
                                 TextInput::make('title')
-                                    ->required(),
+                                    ->required()
+                                    ->live(debounce: 500)
+                                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
+                                        $slug = $get('slug');
+                                        if ($slug === null || str($slug)->length())
+                                        $set('slug', str($state)->slug()->toString());
+                                    }),
                                 TextInput::make('subtitle'),
+
+                                TextInput::make('slug')
+                                    ->required()
+                                    ->helperText('The sub-domain slug of this KB.')
+                                    ->disabled(fn (Get $get) => $get('documentation_id') == null)
+                                    ->prefix(function (Get $get) {
+                                        $isSecure = Str::startsWith(config('app.url'), 'https');
+                                        $protocol = $isSecure ? 'https://' : 'http://';
+                                        $domain = config('knowledge-base.domain');
+                                        $kb = $get('documentation_id');
+                                        if ($kb == null)
+                                        {
+                                            return null;
+                                        }
+
+                                        $slug = Documentation::query()->where('id', '=', $kb)->first()->slug;
+                                        return "$protocol$slug.$domain/article/";
+                                    })
+                                    ->alphaDash(),
                             ]),
 
                         Column::make()
@@ -66,29 +94,45 @@ class KBArticleResource extends Resource
                                     ->directory('kb-article/header-image')
                                     ->visibility('private'),
 
+                                // FIXME: icon is empty when switching mode
                                 Select::make('icon_mode')
                                     ->label('Icon Mode')
                                     ->native(false)
                                     ->options([
+                                        null => 'None',
                                         'heroicon' => 'Hero Icons',
                                         'emoji' => 'Emoji',
                                         'custom' => 'Custom Image',
                                     ])
-                                    ->live(),
-                                IconPicker::make('icon')
-                                    ->visible(fn (Get $get): bool => $get('icon_mode') == 'heroicon')
-                                    ->label('Hero Icons')
-                                    ->helperText(view('filament.form.helpers.icon_heroicons')),
-                                TextInput::make('icon')
-                                    ->visible(fn (Get $get): bool => $get('icon_mode') == 'emoji')
-                                    ->label('Emoji')
-                                    ->regex('/\p{Extended_Pictographic}/u'),
-                                FileUpload::make('icon')
-                                    ->visible(fn (Get $get): bool => $get('icon_mode') == 'custom')
-                                    ->label('Custom Icon')
-                                    ->helperText('')
-                                    ->directory('kb-article/icon')
-                                    ->visibility('private'),
+                                    ->live()
+                                    ->afterStateUpdated(fn (Select $component) => $component
+                                        ->getContainer()
+                                        ->getComponent('icon_mode_fields')
+                                        ->getChildComponentContainer()
+                                        ->fill()
+                                    ),
+                                Wrapper::make()
+                                    ->key('icon_mode_fields')
+                                    ->schema(fn (Get $get): array => match($get('icon_mode')) {
+                                        'heroicon' => [
+                                            IconPicker::make('icon')
+                                                ->label('Hero Icons')
+                                                ->helperText(view('filament.form.helpers.icon_heroicons')),
+                                        ],
+                                        'emoji' => [
+                                            TextInput::make('icon')
+                                                ->label('Emoji')
+                                                ->regex('/\p{Extended_Pictographic}/u'),
+                                        ],
+                                        'custom' => [
+                                            FileUpload::make('icon')
+                                                ->label('Custom Icon')
+                                                ->helperText('Upload a custom image to use as the icon.')
+                                                ->directory('kb-article/icon')
+                                                ->visibility('private'),
+                                        ],
+                                        default => [],
+                                    })
                             ]),
                     ]),
 
@@ -104,12 +148,14 @@ class KBArticleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->striped()
             ->searchable()
+            ->persistFiltersInSession()
             ->columns([
                 TextColumn::make('knowledgeBase.name')
                     ->label('Knowledge Base'),
                 TextColumn::make('title')
-                    ->description(fn (KBArticle $record): string => $record->subtitle),
+                    ->description(fn (KBArticle $record): ?string => $record->subtitle),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -119,6 +165,7 @@ class KBArticleResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('knowledge_base')
+                    ->label('Knowledge Base')
                     ->relationship('knowledgeBase', 'name', fn (Builder $query) => $query->withTrashed())
                     ->searchable()
                     ->preload()

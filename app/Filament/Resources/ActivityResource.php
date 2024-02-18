@@ -32,9 +32,9 @@ class ActivityResource extends Resource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->orderByDesc('created_at'))
             ->columns([
-                TextColumn::make('created_at')
-                    ->label('Timestamp')
-                    ->dateTime(),
+                TextColumn::make('subject_type')
+                    ->label('Subject')
+                    ->formatStateUsing(fn (string $state) => $state::getLabel()),
                 TextColumn::make('event')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -43,15 +43,15 @@ class ActivityResource extends Resource
                         'deleted' => 'danger',
                         'restored' => 'gray',
                     }),
-                TextColumn::make('subject_type')
-                    ->label('Subject')
-                    ->formatStateUsing(fn (string $state) => $state::getLabel()),
                 TextColumn::make('causer_id')
                     ->label('Causer')
                     ->default(-1)
                     ->badge(fn (int $state): bool => $state == -1)
                     ->formatStateUsing(fn (int $state): string => $state == -1 ? 'SYSTEM' :
                         User::query()->where('id', '=', $state)->firstOrFail()->name),
+                TextColumn::make('created_at')
+                    ->label('Timestamp')
+                    ->dateTime(),
             ])
             ->filters([
                 //
