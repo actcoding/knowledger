@@ -47,6 +47,7 @@ class KBArticle extends Model
             'subtitle' => $this->subtitle,
             'slug' => $this->slug,
             'category' => $this->category,
+            'documentation_id' => $this->documentation_id,
         ];
     }
 
@@ -63,5 +64,10 @@ class KBArticle extends Model
         }
 
         return asset('storage/' . $this->header_image);
+    }
+
+    public function routePreview(): string
+    {
+        return route('kb.preview.article', [ 'slug' => $this->knowledgeBase->slug, 'article' => $this->slug, ]);
     }
 }

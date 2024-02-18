@@ -142,7 +142,7 @@ return [
                 'sortableAttributes' => ['created_at', 'updated_at'],
             ],
             KBArticle::class => [
-                'filterableAttributes'=> ['title', 'subtitle', 'slug', 'category'],
+                'filterableAttributes'=> ['title', 'subtitle', 'slug', 'category', 'documentation_id'],
                 'sortableAttributes' => ['created_at', 'updated_at'],
             ],
         ],
