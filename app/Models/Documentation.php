@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -20,6 +21,7 @@ class Documentation extends Model
     use HasFactory,
         LogsActivity,
         Prunable,
+        Searchable,
         SoftDeletes;
 
     public static function getLabel(): string
@@ -67,6 +69,18 @@ class Documentation extends Model
     public function prunable(): Builder
     {
         return static::query()->whereNotNull('deleted_at');
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => (int) $this->id,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'domains' => $this->domains,
+        ];
     }
 
     public function publicLogoPath(): ?string
