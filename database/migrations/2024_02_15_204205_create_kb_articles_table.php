@@ -24,6 +24,7 @@ return new class extends Migration
             $table->enum('status', enum_values(Status::cases()))->default('draft');
             $table->text('title');
             $table->text('subtitle')->nullable();
+            $table->text('category')->nullable();
             $table->text('icon_mode')->nullable();
             $table->text('icon')->nullable();
             $table->text('header_image')->nullable();

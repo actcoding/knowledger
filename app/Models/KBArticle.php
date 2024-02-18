@@ -26,7 +26,7 @@ class KBArticle extends Model
         'documentation_id',
         'title', 'subtitle', 'slug',
         'icon_mode', 'icon', 'header_image',
-        'content',
+        'content', 'category',
     ];
 
     public function getActivitylogOptions(): LogOptions

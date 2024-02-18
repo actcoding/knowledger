@@ -25,7 +25,7 @@
     @vite('resources/css/app.css')
     @vite('resources/js/preview-toc.ts')
 </head>
-<body class="bg-{{ $kb->theme_color }}-100">
+<body class="bg-{{ $kb->theme_color }}-100 select-none">
 
     @if($article->header_image !== null)
     <img src="{{ $article->publicHeaderImagePath() }}" class="w-screen h-[384px] object-cover object-center" />

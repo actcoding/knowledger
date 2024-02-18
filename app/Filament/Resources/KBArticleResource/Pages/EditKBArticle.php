@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\KBArticleResource\Pages;
 
+use App\Filament\Actions\KBArticlePreviewAction;
 use App\Filament\Resources\KBArticleResource;
 use Filament\Actions;
 use Filament\Actions\Action;
@@ -14,12 +15,7 @@ class EditKBArticle extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('preview')
-                ->color('secondary')
-                ->icon('heroicon-o-eye')
-                ->link()
-                ->url(route('kb.preview.article', [ 'slug' => $this->record->knowledgeBase->slug, 'article' => $this->record->slug ]))
-                ->openUrlInNewTab(),
+            KBArticlePreviewAction::make(),
             Actions\DeleteAction::make(),
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),

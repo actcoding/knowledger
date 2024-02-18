@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Actions\KBPreviewAction;
+use App\Filament\Actions\KBPreviewTableAction;
 use App\Filament\Resources\DocumentationResource\Pages;
 use App\Models\Documentation;
 use App\Util\Colors;
@@ -21,7 +23,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Str;
+use function App\is_secure;
 
 class DocumentationResource extends Resource
 {
@@ -36,8 +38,6 @@ class DocumentationResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $isSecure = Str::startsWith(config('app.url'), 'https');
-
         $colors = collect(Colors::cases())
             ->map(fn ($state) => $state->value)
             ->sort()
@@ -64,7 +64,7 @@ class DocumentationResource extends Resource
                                 TextInput::make('slug')
                                     ->required()
                                     ->helperText('The sub-domain slug of this KB.')
-                                    ->prefix($isSecure ? 'https://' : 'http://')
+                                    ->prefix(is_secure() ? 'https://' : 'http://')
                                     ->suffix('.' . config('knowledge-base.domain'))
                                     ->alphaDash(),
 
@@ -113,13 +113,14 @@ class DocumentationResource extends Resource
 
     public static function table(Table $table): Table
     {
+
         return $table
             ->striped()
             ->columns([
                 ImageColumn::make('logo')
                     ->visibility('private'),
                 TextColumn::make('name')
-                    ->description(fn (Documentation $record): string => 'https://' . $record->slug . '.' . config('knowledge-base.domain')),
+                    ->description(fn (Documentation $record): string => (is_secure() ? 'https://' : 'http://') . $record->slug . '.' . config('knowledge-base.domain')),
                 TextColumn::make('domains')
                     ->label('Additional Domains')
                     ->default([[]])
@@ -131,7 +132,7 @@ class DocumentationResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                KBPreviewTableAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

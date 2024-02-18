@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\Summarizers\Count;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -52,7 +53,8 @@ class UserResource extends Resource
                 IconColumn::make('email_verified_at')
                     ->label('Email verified?')
                     ->icon(fn ($state): string => $state === null ? 'heroicon-o-x-mark' : 'heroicon-o-check-badge')
-                    ->color(fn ($state): string => $state === null ? 'danger' : 'success'),
+                    ->color(fn ($state): string => $state === null ? 'danger' : 'success')
+                    ->summarize(Count::make()),
                 TextColumn::make('roles.name')
                     ->listWithLineBreaks()
                     ->badge(),

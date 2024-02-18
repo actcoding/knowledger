@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Actions\KBArticlePreviewTableAction;
+use App\Filament\Actions\KBPreviewAction;
 use App\Filament\Layouts\Column;
 use App\Filament\Layouts\Wrapper;
 use App\Filament\Resources\KBArticleResource\Pages;
@@ -20,12 +22,14 @@ use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Guava\FilamentIconPicker\Forms\IconPicker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class KBArticleResource extends Resource
@@ -51,6 +55,8 @@ class KBArticleResource extends Resource
                             ->description('General Information')
                             ->schema([
                                 Select::make('documentation_id')
+                                    ->label('Knowledge Base')
+                                    ->required()
                                     ->native(false)
                                     ->live(debounce: 500)
                                     ->searchable()
@@ -84,6 +90,23 @@ class KBArticleResource extends Resource
                                         return "$protocol$slug.$domain/article/";
                                     })
                                     ->alphaDash(),
+
+                                TextInput::make('category')
+                                    ->autocomplete()
+                                    ->datalist(function (?KBArticle $record) {
+                                        if ($record == null)
+                                        {
+                                            return [];
+                                        }
+
+                                        return KBArticle::query()
+                                            ->where('documentation_id', '=', $record->documentation_id)
+                                            ->select('category')
+                                            ->distinct()
+                                            ->get()
+                                            ->pluck('category')
+                                            ->all();
+                                    }),
                             ]),
 
                         Column::make()
@@ -151,9 +174,21 @@ class KBArticleResource extends Resource
             ->striped()
             ->searchable()
             ->persistFiltersInSession()
+            ->groups([
+                'status'
+            ])
             ->columns([
                 TextColumn::make('knowledgeBase.name')
-                    ->label('Knowledge Base'),
+                    ->label('Knowledge Base')
+                    ->hidden(function (HasTable $livewire) {
+                        $state = $livewire->getTableFilterState('knowledge_base');
+                        if ($state == null)
+                        {
+                            return false;
+                        }
+
+                        return str($state['value'])->length() > 0;
+                    }),
                 TextColumn::make('title')
                     ->description(fn (KBArticle $record): ?string => $record->subtitle),
                 TextColumn::make('status')
@@ -173,7 +208,7 @@ class KBArticleResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ], FiltersLayout::AboveContent)
             ->actions([
-                Tables\Actions\EditAction::make(),
+                KBArticlePreviewTableAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
