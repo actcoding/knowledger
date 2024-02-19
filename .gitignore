@@ -46,3 +46,6 @@ Homestead.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,laravel
+
+_ide_helper_models.php
+_ide_helper.php
