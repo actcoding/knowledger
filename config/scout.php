@@ -137,14 +137,8 @@ return [
         'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
-            Documentation::class => [
-                'filterableAttributes'=> ['name', 'slug', 'domains'],
-                'sortableAttributes' => ['created_at', 'updated_at'],
-            ],
-            KBArticle::class => [
-                'filterableAttributes'=> ['title', 'subtitle', 'slug', 'category', 'documentation_id'],
-                'sortableAttributes' => ['created_at', 'updated_at'],
-            ],
+            Documentation::class => Documentation::getScoutOptions(),
+            KBArticle::class => KBArticle::getScoutOptions(),
         ],
     ],
 

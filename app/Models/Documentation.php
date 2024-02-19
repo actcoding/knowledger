@@ -29,6 +29,14 @@ class Documentation extends Model
         return 'Knowledge Base';
     }
 
+    public static function getScoutOptions(): array
+    {
+        return [
+            'filterableAttributes'=> ['name', 'slug', 'domains'],
+            'sortableAttributes' => ['created_at', 'updated_at'],
+        ];
+    }
+
     protected $fillable = [
         'name', 'slug',
         'logo', 'theme_color',

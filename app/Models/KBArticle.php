@@ -22,13 +22,21 @@ class KBArticle extends Model
         return 'Article';
     }
 
+    public static function getScoutOptions(): array
+    {
+        return [
+            'filterableAttributes'=> ['title', 'subtitle', 'slug', 'category', 'status', 'documentation_id'],
+            'sortableAttributes' => ['created_at', 'updated_at'],
+        ];
+    }
+
     protected $table = 'kb_articles';
 
     protected $fillable = [
         'documentation_id',
         'title', 'subtitle', 'slug',
         'icon_mode', 'icon', 'header_image',
-        'content', 'category',
+        'content', 'category', 'status',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -39,16 +47,10 @@ class KBArticle extends Model
 
     public function toSearchableArray()
     {
-        return [
-            'id' => (int) $this->id,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-            'title' => $this->title,
-            'subtitle' => $this->subtitle,
-            'slug' => $this->slug,
-            'category' => $this->category,
-            'documentation_id' => $this->documentation_id,
-        ];
+        return $this->makeHidden([
+            'deleted_at', 'content',
+            'icon_mode', 'icon', 'header_image',
+        ])->toArray();
     }
 
     public function knowledgeBase(): BelongsTo
