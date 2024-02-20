@@ -3,18 +3,17 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Actions\KBArticlePreviewTableAction;
-use App\Filament\Actions\KBPreviewAction;
+use App\Filament\Forms\StatusSelect;
 use App\Filament\Layouts\Column;
 use App\Filament\Layouts\Wrapper;
 use App\Filament\Resources\KBArticleResource\Pages;
 use App\Models\Documentation;
 use App\Models\KBArticle;
-use BladeUI\Icons\Factory;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Split;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -29,7 +28,6 @@ use Filament\Tables\Table;
 use Guava\FilamentIconPicker\Forms\IconPicker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class KBArticleResource extends Resource
@@ -47,116 +45,125 @@ class KBArticleResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(2)
             ->schema([
-                Grid::make(2)
+                Section::make('Info')
+                    ->description('General Information')
+                    ->columnSpan(1)
                     ->schema([
-                        Section::make('Info')
-                            ->columnSpan(1)
-                            ->description('General Information')
-                            ->schema([
-                                Select::make('documentation_id')
-                                    ->label('Knowledge Base')
-                                    ->required()
-                                    ->native(false)
-                                    ->live(debounce: 500)
-                                    ->searchable()
-                                    ->preload()
-                                    ->relationship(name: 'knowledgeBase', titleAttribute: 'name'),
-                                TextInput::make('title')
-                                    ->required()
-                                    ->live(debounce: 500)
-                                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
-                                        $slug = $get('slug');
-                                        if ($slug === null || str($slug)->length())
-                                        $set('slug', str($state)->slug()->toString());
-                                    }),
-                                TextInput::make('subtitle'),
+                        Select::make('documentation_id')
+                            ->label('Knowledge Base')
+                            ->required()
+                            ->native(false)
+                            ->live(debounce: 500)
+                            ->searchable()
+                            ->preload()
+                            ->relationship(name: 'knowledgeBase', titleAttribute: 'name'),
+                        TextInput::make('title')
+                            ->required()
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
+                                $slug = $get('slug');
+                                if ($slug === null || str($slug)->length())
+                                $set('slug', str($state)->slug()->toString());
+                            }),
+                        TextInput::make('subtitle'),
 
-                                TextInput::make('slug')
-                                    ->required()
-                                    ->helperText('The sub-domain slug of this KB.')
-                                    ->disabled(fn (Get $get) => $get('documentation_id') == null)
-                                    ->prefix(function (Get $get) {
-                                        $isSecure = Str::startsWith(config('app.url'), 'https');
-                                        $protocol = $isSecure ? 'https://' : 'http://';
-                                        $domain = config('knowledge-base.domain');
-                                        $kb = $get('documentation_id');
-                                        if ($kb == null)
-                                        {
-                                            return null;
-                                        }
+                        TextInput::make('slug')
+                            ->required()
+                            ->helperText('The sub-domain slug of this KB.')
+                            ->disabled(fn (Get $get) => $get('documentation_id') == null)
+                            ->prefix(function (Get $get) {
+                                $isSecure = Str::startsWith(config('app.url'), 'https');
+                                $protocol = $isSecure ? 'https://' : 'http://';
+                                $domain = config('knowledge-base.domain');
+                                $kb = $get('documentation_id');
+                                if ($kb == null)
+                                {
+                                    return null;
+                                }
 
-                                        $slug = Documentation::query()->where('id', '=', $kb)->first()->slug;
-                                        return "$protocol$slug.$domain/article/";
-                                    })
-                                    ->alphaDash(),
+                                $slug = Documentation::query()->where('id', '=', $kb)->first()->slug;
+                                return "$protocol$slug.$domain/article/";
+                            })
+                            ->alphaDash(),
 
-                                TextInput::make('category')
-                                    ->autocomplete()
-                                    ->datalist(function (?KBArticle $record) {
-                                        if ($record == null)
-                                        {
-                                            return [];
-                                        }
+                        Split::make([
+                            TextInput::make('category')
+                                ->autocomplete()
+                                ->datalist(function (?KBArticle $record) {
+                                    if ($record == null)
+                                    {
+                                        return [];
+                                    }
 
-                                        return KBArticle::query()
-                                            ->where('documentation_id', '=', $record->documentation_id)
-                                            ->select('category')
-                                            ->distinct()
-                                            ->get()
-                                            ->pluck('category')
-                                            ->all();
-                                    }),
-                            ]),
+                                    return KBArticle::query()
+                                        ->where('documentation_id', '=', $record->documentation_id)
+                                        ->select('category')
+                                        ->distinct()
+                                        ->get()
+                                        ->pluck('category')
+                                        ->all();
+                                }),
+                            StatusSelect::make('status')
+                                ->required(),
+                        ])
+                    ]),
 
-                        Column::make()
-                            ->schema([
-                                FileUpload::make('header_image')
-                                    ->image()
-                                    ->helperText('A header image for this article.')
-                                    ->directory('kb-article/header-image')
-                                    ->visibility('private'),
+                Column::make()
+                    ->schema([
+                        FileUpload::make('header_image')
+                            ->image()
+                            ->helperText('A header image for this article.')
+                            ->directory('kb-article/header-image')
+                            ->visibility('private'),
 
-                                // FIXME: icon is empty when switching mode
-                                Select::make('icon_mode')
-                                    ->label('Icon Mode')
-                                    ->native(false)
-                                    ->options([
-                                        null => 'None',
-                                        'heroicon' => 'Hero Icons',
-                                        'emoji' => 'Emoji',
-                                        'custom' => 'Custom Image',
-                                    ])
-                                    ->live()
-                                    ->afterStateUpdated(fn (Select $component) => $component
-                                        ->getContainer()
-                                        ->getComponent('icon_mode_fields')
-                                        ->getChildComponentContainer()
-                                        ->fill()
-                                    ),
-                                Wrapper::make()
-                                    ->key('icon_mode_fields')
-                                    ->schema(fn (Get $get): array => match($get('icon_mode')) {
-                                        'heroicon' => [
-                                            IconPicker::make('icon')
-                                                ->label('Hero Icons')
-                                                ->helperText(view('filament.form.helpers.icon_heroicons')),
-                                        ],
-                                        'emoji' => [
-                                            TextInput::make('icon')
-                                                ->label('Emoji')
-                                                ->regex('/\p{Extended_Pictographic}/u'),
-                                        ],
-                                        'custom' => [
-                                            FileUpload::make('icon')
-                                                ->label('Custom Icon')
-                                                ->helperText('Upload a custom image to use as the icon.')
-                                                ->directory('kb-article/icon')
-                                                ->visibility('private'),
-                                        ],
-                                        default => [],
-                                    })
-                            ]),
+                        // FIXME: icon is empty when switching mode
+                        Split::make([
+                            Select::make('icon_mode')
+                                ->label('Icon Mode')
+                                ->helperText('Choose what type of icon to display.')
+                                ->native(false)
+                                ->options([
+                                    null => 'None',
+                                    'heroicon' => 'Hero Icons',
+                                    'emoji' => 'Emoji',
+                                    'custom' => 'Custom Image',
+                                ])
+                                ->live()
+                                ->afterStateUpdated(fn (Select $component) => $component
+                                    ->getContainer()
+                                    ->getComponent('icon_mode_fields')
+                                    ->getChildComponentContainer()
+                                    ->fill()
+                                ),
+                            Wrapper::make()
+                                ->key('icon_mode_fields')
+                                ->schema(fn (Get $get): array => match($get('icon_mode')) {
+                                    'heroicon' => [
+                                        IconPicker::make('icon')
+                                            ->required()
+                                            ->label('Hero Icons')
+                                            ->helperText(view('filament.form.helpers.icon_heroicons')),
+                                    ],
+                                    'emoji' => [
+                                        TextInput::make('icon')
+                                            ->required()
+                                            ->label('Emoji')
+                                            ->helperText(view('filament.form.helpers.icon_emoji'))
+                                            ->regex('/\p{Extended_Pictographic}/u'),
+                                    ],
+                                    'custom' => [
+                                        FileUpload::make('icon')
+                                            ->required()
+                                            ->label('Custom Icon')
+                                            ->helperText('Upload a custom image to use as the icon.')
+                                            ->directory('kb-article/icon')
+                                            ->visibility('private'),
+                                    ],
+                                    default => [],
+                                })
+                        ])
                     ]),
 
                 MarkdownEditor::make('content')
@@ -190,13 +197,12 @@ class KBArticleResource extends Resource
                         return str($state['value'])->length() > 0;
                     }),
                 TextColumn::make('title')
-                    ->description(fn (KBArticle $record): ?string => $record->subtitle),
+                    ->description(fn (KBArticle $record): ?string => $record->subtitle)
+                    ->wrap(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'active' => 'success',
-                        'draft' => 'info',
-                    }),
+                    ->color(fn (string $state): string => StatusSelect::color($state)),
+                TextColumn::make('category'),
             ])
             ->filters([
                 SelectFilter::make('knowledge_base')

@@ -27,12 +27,27 @@
 </head>
 <body class="bg-{{ $kb->theme_color }}-100 select-none">
 
+    <nav class="w-screen h-20 shadow z-10 bg-{{ $kb->theme_color }}-200">
+        <div class="container mx-auto h-full gap-x-4 flex flex-flox justify-between items-center">
+            <a href="{{ route('kb.preview', [ 'slug' => $kb->slug ]) }}" class="text-2xl font-bold flex flex-row items-center gap-x-4">
+                @if($kb->logo !== null)
+                <img src="{{ $kb->publicLogoPath() }}" width="48" />
+                @endif
+                <span>
+                    {{ $kb->name }}
+                </span>
+            </a>
+
+            @livewire(KBSearchBar::class, ['kb' => $kb])
+        </div>
+    </nav>
+
     @if($article->header_image !== null)
     <img src="{{ $article->publicHeaderImagePath() }}" class="w-screen h-[384px] object-cover object-center" />
     @endif
 
     {{-- Header --}}
-    <div class="container mx-auto mt-24">
+    <div class="container mx-auto mt-16">
         <a
             class="
                 inline-flex items-center gap-x-3
