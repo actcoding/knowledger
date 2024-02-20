@@ -28,6 +28,18 @@
             "group": "none"
         },
         {
+            "label": "Scheduler",
+            "type": "shell",
+            "command": "./artisan schedule:work",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "group": "none"
+        },
+        {
             "label": "Queue",
             "type": "shell",
             "command": "./artisan queue:work",
@@ -45,6 +57,7 @@
             "dependsOn": [
                 "Backend",
                 "Frontend",
+                "Scheduler",
                 "Queue",
                 "Open Browser"
             ]
