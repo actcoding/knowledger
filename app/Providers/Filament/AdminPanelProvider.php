@@ -9,6 +9,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -72,6 +73,18 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Knowledge')
                     ->collapsible(false),
+            ])
+            ->navigationItems([
+                NavigationItem::make('Horizon')
+                    ->icon('heroicon-o-globe-europe-africa')
+                    ->url(url()->to(config('horizon.path')), true)
+                    ->group('System')
+                    ->sort(3),
+                NavigationItem::make('Telescope')
+                    ->icon('heroicon-o-sparkles')
+                    ->url(url()->to(config('telescope.path')), true)
+                    ->group('System')
+                    ->sort(4),
             ])
             ->plugins([
                 EnvironmentIndicatorPlugin::make()
