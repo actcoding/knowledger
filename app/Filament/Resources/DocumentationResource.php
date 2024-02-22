@@ -88,7 +88,12 @@ class DocumentationResource extends Resource
                         FileUpload::make('logo')
                             ->image()
                             ->imagePreviewHeight('250')
-                            ->helperText('The brand logo or icon of this KB.')
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['1:1'])
+                            ->imageEditorMode(2)
+                            ->imageResizeTargetWidth(192)
+                            ->imageResizeTargetHeight(192)
+                            ->helperText('The brand logo or icon of this KB. Prefer 1:1 dimensions.')
                             ->directory('knowledge-base/logo')
                             ->visibility('private'),
                     ]),
