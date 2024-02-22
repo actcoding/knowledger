@@ -7,14 +7,16 @@ use App\Models\KBArticle;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class KnowledgeBaseController extends Controller
 {
-    public function home(Request $request, string $slug): Response|ResponseFactory
+    public function home(Request $request, string $slug): Response|ResponseFactory|JsonResponse
     {
-        $kb = $this->findKBBySlug($slug);
+        $kb = $this->findKBBySlug($slug, true);
         if ($kb === null)
         {
             return response(null, 404);
@@ -25,7 +27,11 @@ class KnowledgeBaseController extends Controller
             return response(null, 403);
         }
 
-        return response($kb->name);
+        if (app()->isLocal()) {
+            \Barryvdh\Debugbar\Facades\Debugbar::disable();
+        }
+
+        return response()->json($kb->makeHidden(['id', 'password', 'deleted_at', 'status']));
     }
 
     public function preview(Request $request, string $slug): Response|View|Factory
@@ -92,10 +98,15 @@ class KnowledgeBaseController extends Controller
         ]);
     }
 
-    private function findKBBySlug(string $slug): ?Documentation
+    private function findKBBySlug(string $slug, bool $public = false): ?Documentation
     {
         return Documentation::query()
             ->where('slug', '=', $slug)
+            ->where(function (Builder $query) use ($public) {
+                if ($public) {
+                    $query->whereNull('deleted_at')->where('status', '=', 'active');
+                }
+            })
             ->first();
     }
 

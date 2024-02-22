@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'domain' => 'kb.actcoding.de',
+    'domain' => env('KB_DOMAIN', 'kb.actcoding.de'),
 ];
