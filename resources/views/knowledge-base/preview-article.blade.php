@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="UTF-8">
+<x-layout.minimal>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<x-slot:title>{{ $article->title }} | {{ $kb->name }}</x-slot:title>
 
-    <title>📚 {{ $article->title }} | {{ $kb->name }}</title>
-
+<x-slot:head>
     {{-- <link rel="manifest" href="/manifest.json"> --}}
 
     @if($kb->logo !== null)
@@ -22,11 +16,12 @@
     <link rel="preload" href="{{ $article->publicHeaderImagePath() }}" as="image">
     @endif
 
-    @vite('resources/css/app.css')
     @vite('resources/js/preview-toc.ts')
-</head>
-<body class="bg-{{ $kb->theme_color }}-100 select-none">
+</x-slot:head>
 
+<x-slot:bodyClass>bg-{{ $kb->theme_color }}-100</x-slot:bodyClass>
+
+<x-slot:body>
     <nav class="w-screen h-20 shadow z-10 bg-{{ $kb->theme_color }}-200">
         <div class="container mx-auto h-full gap-x-4 flex flex-flox justify-between items-center">
             <a href="{{ route('kb.preview', [ 'slug' => $kb->slug ]) }}" class="text-2xl font-bold flex flex-row items-center gap-x-4">
@@ -97,6 +92,7 @@
             {!! $article->content !!}
         </x-markdown>
     </main>
+</x-slot:body>
 
-</body>
-</html>
+
+</x-layout.minimal>

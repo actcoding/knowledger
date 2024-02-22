@@ -1,27 +1,21 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="UTF-8">
+<x-layout.minimal>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<x-slot:title>{{ $kb->name }}</x-slot:title>
 
-    <title>📚 {{ $kb->name }}</title>
-
+<x-slot:head>
     {{-- <link rel="manifest" href="/manifest.json"> --}}
 
     @if($kb->logo !== null)
     <link rel="apple-touch-icon" href="{{ $kb->publicLogoPath() }}" as="image">
     <link rel="shortcut icon" href="{{ $kb->publicLogoPath() }}" as="image">
     <link rel="preload" href="{{ $kb->publicLogoPath() }}" as="image">
-    @endif
+@endif
+</x-slot:head>
 
-    @vite('resources/css/app.css')
-</head>
-<body class="bg-{{ $kb->theme_color }}-100 select-none">
+<x-slot:bodyClass>bg-{{ $kb->theme_color }}-100</x-slot:bodyClass>
 
+<x-slot:body>
     <div class="container mx-auto max-w-screen-xl">
         <div class="flex flex-col items-center py-16 gap-y-8">
 
@@ -61,6 +55,7 @@
 
         </div>
     </div>
+</x-slot:body>
 
-</body>
-</html>
+
+</x-layout.minimal>
