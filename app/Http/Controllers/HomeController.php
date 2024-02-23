@@ -13,7 +13,7 @@ class HomeController extends Controller
      */
     public function __invoke(Request $request): RedirectResponse
     {
-        return redirect('/admin');
+        return redirect()->route('login');
     }
 
     private function collectDomains(): Collection

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Http\Responses\LogoutResponse;
+use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Health\Checks\Checks\CacheCheck;
 use Spatie\Health\Checks\Checks\DebugModeCheck;
@@ -23,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isLocal()) {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
         }
+
+        // Filament custom logout logic
+        // https://filamentphp.com/community/tim-wassenburg-how-to-customize-logout-redirect
+        $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
     }
 
     /**

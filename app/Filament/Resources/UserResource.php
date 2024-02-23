@@ -55,6 +55,8 @@ class UserResource extends Resource
                     ->icon(fn ($state): string => $state === null ? 'heroicon-o-x-mark' : 'heroicon-o-check-badge')
                     ->color(fn ($state): string => $state === null ? 'danger' : 'success')
                     ->summarize(Count::make()),
+                TextColumn::make('provider')
+                    ->badge(),
                 TextColumn::make('roles.name')
                     ->listWithLineBreaks()
                     ->badge(),

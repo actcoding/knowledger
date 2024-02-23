@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KnowledgeBaseController;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +26,11 @@ Route::domain('{slug}.' . $subdomain)->group(function () {
 });
 
 Route::get('/', HomeController::class)->name('home');
-Route::get('/login', HomeController::class)->name('login');
+
+Route::get('/login', [AuthController::class, 'login'])->name('login');
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/auth/redirect', [AuthController::class, 'redirect'])->name('auth.redirect');
+Route::get('/auth/callback', [AuthController::class, 'callback'])->name('auth.callback');
 
 Route::middleware('auth.session')->group(function () {
     Route::get('/kb/preview/{slug}', [KnowledgeBaseController::class, 'preview'])
