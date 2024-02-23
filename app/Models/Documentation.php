@@ -101,14 +101,15 @@ class Documentation extends Model
         return asset('storage/' . $this->logo);
     }
 
-    public function publicUrl(): string
-    {
-        $subdomain = config('knowledge-base.domain');
-        return 'https://' . $this->slug . $subdomain;
-    }
-
     public function articles(): HasMany
     {
-        return $this->hasMany(KBArticle::class);
+        // TODO: Order by numeric attribute
+        return $this->hasMany(KBArticle::class)->orderBy('title', 'asc');
+    }
+
+    public function route(bool $public): string
+    {
+        $name = $public ? 'kb.home' : 'kb.preview';
+        return route($name, [ 'slug' => $this->slug ]);
     }
 }

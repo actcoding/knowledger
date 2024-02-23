@@ -32,7 +32,7 @@
     <div class="mt-2 w-full rounded-md bg-white border-gray-200 p-2.5 absolute drop-shadow-lg z-20 max-h-64 overflow-x-hidden overflow-y-auto">
         @if (count($results) > 0)
         @foreach ($results as $article)
-        <a href="{{ $article->routePreview() }}" class="p-2.5 rounded-md hover:bg-slate-200 transition-colors grid grid-cols-search grid-rows-2 gap-x-3 items-center">
+        <a href="{{ $article->route($public) }}" class="p-2.5 rounded-md hover:bg-slate-200 transition-colors grid grid-cols-search grid-rows-2 gap-x-3 items-center">
             <div class="row-span-2">
                 <x-article-icon :article="$article" small />
             </div>

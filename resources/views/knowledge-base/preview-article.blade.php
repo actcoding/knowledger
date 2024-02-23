@@ -4,7 +4,9 @@
 <x-slot:title>{{ $article->title }} | {{ $kb->name }}</x-slot:title>
 
 <x-slot:head>
-    {{-- <link rel="manifest" href="/manifest.json"> --}}
+    @if ($public)
+    <link rel="manifest" href="{{ route('kb.manifest', [ 'slug' => $kb->slug ]) }}">
+    @endif
 
     @if($kb->logo !== null)
     <link rel="apple-touch-icon" href="{{ $kb->publicLogoPath() }}" as="image">
@@ -22,9 +24,13 @@
 <x-slot:bodyClass>bg-{{ $kb->theme_color }}-100</x-slot:bodyClass>
 
 <x-slot:body>
-    <nav class="w-screen h-20 shadow z-10 bg-{{ $kb->theme_color }}-200">
+    @if (!$public)
+    <x-ribbon.preview />
+    @endif
+
+    <nav class="w-screen h-20 {{ $article->header_image != null ? 'drop-shadow-2xl' : 'drop-shadow' }} z-20 bg-{{ $kb->theme_color }}-300">
         <div class="container mx-auto h-full gap-x-4 flex flex-flox justify-between items-center">
-            <a href="{{ route('kb.preview', [ 'slug' => $kb->slug ]) }}" class="text-2xl font-bold flex flex-row items-center gap-x-4">
+            <a href="{{ $kb->route($public) }}" class="text-2xl font-bold flex flex-row items-center gap-x-4">
                 @if($kb->logo !== null)
                 <img src="{{ $kb->publicLogoPath() }}" width="48" />
                 @endif
@@ -33,11 +39,11 @@
                 </span>
             </a>
 
-            @livewire(KBSearchBar::class, ['kb' => $kb])
+            @livewire(KBSearchBar::class, ['kb' => $kb, 'public' => $public])
         </div>
     </nav>
 
-    @if($article->header_image !== null)
+    @if($article->header_image != null)
     <img src="{{ $article->publicHeaderImagePath() }}" class="w-screen h-[384px] object-cover object-center" />
     @endif
 
@@ -51,7 +57,7 @@
                 transition-all
                 hover:bg-transparent hover:text-{{ $kb->theme_color }}-600 focus:outline-none focus:ring
             "
-            href="{{ route('kb.preview', ['slug' => $kb->slug]) }}"
+            href="{{ $kb->route($public) }}"
         >
             @svg('heroicon-o-arrow-long-left', 'size-5')
 
@@ -75,9 +81,9 @@
                 @endif
             </div>
         </div>
-
-        <hr class="border-{{ $kb->theme_color }}-300 mt-8" />
     </div>
+
+    <hr class="border-{{ $kb->theme_color }}-300 my-8" />
 
     {{-- Main --}}
     <main class="grid grid-cols-article gap-x-12 items-baseline mb-48 container mx-auto">

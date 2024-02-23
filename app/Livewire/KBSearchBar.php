@@ -10,6 +10,8 @@ use Livewire\Component;
 class KBSearchBar extends Component
 {
     public Documentation $kb;
+    public bool $public;
+
     public string $query = '';
 
     public function render()
@@ -18,9 +20,14 @@ class KBSearchBar extends Component
 
         if (Str::length($this->query) > 0)
         {
-            $results = KBArticle::search($this->query)
-                ->where('documentation_id', $this->kb->id)
-                ->get();
+            $query = KBArticle::search($this->query)
+                ->where('documentation_id', $this->kb->id);
+
+            if ($this->public) {
+                $query = $query->where('status', 'active');
+            }
+
+            $results = $query->get();
         }
 
         return view('livewire.kb-search-bar', [
@@ -30,6 +37,6 @@ class KBSearchBar extends Component
 
     public function open(KBArticle $article)
     {
-        return $this->redirect($article->routePreview());
+        return $this->redirect($article->route($this->public));
     }
 }

@@ -14,7 +14,7 @@ class KBArticlePreviewAction extends Action
         $action->color('secondary');
         $action->icon('heroicon-o-eye');
         $action->link();
-        $action->url(fn (KBArticle $record): string => $record->routePreview());
+        $action->url(fn (KBArticle $record): string => $record->route(false));
         $action->openUrlInNewTab();
     }
 

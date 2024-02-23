@@ -4,7 +4,9 @@
 <x-slot:title>{{ $kb->name }}</x-slot:title>
 
 <x-slot:head>
-    {{-- <link rel="manifest" href="/manifest.json"> --}}
+    @if ($public)
+    <link rel="manifest" href="{{ route('kb.manifest', [ 'slug' => $kb->slug ]) }}">
+    @endif
 
     @if($kb->logo !== null)
     <link rel="apple-touch-icon" href="{{ $kb->publicLogoPath() }}" as="image">
@@ -16,11 +18,15 @@
 <x-slot:bodyClass>bg-{{ $kb->theme_color }}-100</x-slot:bodyClass>
 
 <x-slot:body>
-    <div class="container mx-auto max-w-screen-xl">
-        <div class="flex flex-col items-center py-16 gap-y-8">
+    @if (!$public)
+    <x-ribbon.preview />
+    @endif
+
+    <div class="container mx-auto max-w-screen-xl h-screen">
+        <div class="flex flex-col items-center py-8 gap-y-8">
 
             @if($kb->logo !== null)
-            <img src="{{ $kb->publicLogoPath() }}" width="128" />
+            <img src="{{ $kb->publicLogoPath() }}" class="h-48" />
             @endif
 
             <p class="text-6xl font-bold">
@@ -31,17 +37,22 @@
                 Welcome to this <strong>Knowledge Base</strong> (KB)
             </p>
 
-            @livewire(KBSearchBar::class, ['kb' => $kb])
+            @livewire(KBSearchBar::class, ['kb' => $kb, 'public' => $public])
 
-            <p class="text-2xl font-medium mt-12">
-                Featured Articles
-            </p>
+            @if ($articles->count() > 0)
+                <p class="text-2xl font-medium mt-12">
+                    Featured Articles
+                </p>
+            @else
+                {!! file_get_contents(resource_path('img/undraw_empty_re_opql.svg')) !!}
+            @endif
+
 
             <div class="grid grid-cols-4 gap-8">
-            @forelse($kb->articles as $article)
+            @forelse($articles as $article)
                 <a
                     class="bg-white border border-slate-200 rounded-lg py-6 px-16 drop-shadow transition-transform hover:-translate-y-2 flex flex-col gap-y-4 items-center"
-                    href={{ $article->routePreview() }}
+                    href={{ $article->route($public) }}
                 >
                     <x-article-icon :$article small />
                     <span class="text-xl text-center">
@@ -49,7 +60,9 @@
                     </span>
                 </a>
             @empty
-
+                <p>
+                    Empty
+                </p>
             @endforelse
             </div>
 

@@ -68,8 +68,9 @@ class KBArticle extends Model
         return asset('storage/' . $this->header_image);
     }
 
-    public function routePreview(): string
+    public function route(bool $public): string
     {
-        return route('kb.preview.article', [ 'slug' => $this->knowledgeBase->slug, 'article' => $this->slug, ]);
+        $name = $public ? 'kb.article' : 'kb.preview.article';
+        return route($name, [ 'slug' => $this->knowledgeBase->slug, 'article' => $this->slug, ]);
     }
 }
