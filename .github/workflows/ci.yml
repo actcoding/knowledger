@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  # workflow_dispatch:
+  #   inputs:
+  #     deploy:
+  #       type: boolean
+  #       description: Whether to deploy the application.
+  #       default: false
+  #       required: true
+  #     stage:
+  #       type: choice
+  #       description: The stage to deploy to.
+  #       default: dev
+  #       options:
+  #         - dev
+  #         - stage
+  #         - prod
+  #       required: true
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: gd, redis, xdebug
+          coverage: xdebug
+
+      - uses: actions/cache/restore@v4
+        id: cache-composer
+        with:
+          path: vendor
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+      - name: Install Dependencies
+        if: steps.cache-composer.outputs.cache-hit != 'true'
+        run: composer install --no-interaction
+      - uses: actions/cache/restore@v4
+        if: steps.cache-composer.outputs.cache-hit != 'true'
+        with:
+          path: vendor
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
+      - name: Create .env file
+        run: |
+          cp .env.example .env
+          KEY=$(php artisan key:generate --no-interaction --show)
+          sed -i "s|^APP_KEY=.*|APP_KEY=$KEY|g" .env
+
+      - name: Run tests
+        run: php vendor/bin/phpunit --coverage-clover coverage.xml --path-coverage
+        env:
+          XDEBUG_MODE: coverage
+
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.xml
+
+      # - name: Lint
+      #   run: php vendor/bin/pint --test
