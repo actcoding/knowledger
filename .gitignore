@@ -49,3 +49,7 @@ Homestead.json
 
 _ide_helper_models.php
 _ide_helper.php
+
+coverage.xml
+
+.github/*.env
