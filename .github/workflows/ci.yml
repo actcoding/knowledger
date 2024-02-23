@@ -44,7 +44,7 @@ jobs:
       - name: Install Dependencies
         if: steps.cache-composer.outputs.cache-hit != 'true'
         run: composer install --no-interaction
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/save@v4
         if: steps.cache-composer.outputs.cache-hit != 'true'
         with:
           path: vendor
