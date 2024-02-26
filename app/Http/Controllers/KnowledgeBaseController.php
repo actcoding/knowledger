@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Documentation;
 use App\Models\KBArticle;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
+use function App\tailwindColor;
 
 class KnowledgeBaseController extends Controller
 {
@@ -68,9 +71,20 @@ class KnowledgeBaseController extends Controller
             return response(null, 404);
         }
 
-        // FIXME: logo is optional
-        $image = public_path('storage/' . $kb->logo);
-        list($width, $height) = getimagesize($image);
+        $icons = [];
+        try {
+            $image = public_path('storage/' . $kb->logo);
+            list($width, $height) = getimagesize($image);
+
+            $icons[] = [
+                'type' => 'image/png',
+                'src' => $kb->publicLogoPath(),
+                'sizes' => $width . 'x' . $height,
+                'purpose' => 'any',
+            ];
+        } catch (\Throwable $th) {
+            // ignore
+        }
 
         return response()->json([
             'id' => str($kb->id),
@@ -79,14 +93,7 @@ class KnowledgeBaseController extends Controller
             'display' => 'fullscreen',
             'lang' => 'en',
             'orientation' => 'landscape',
-            'icons' => [
-                [
-                    'type' => 'image/png',
-                    'src' => $kb->publicLogoPath(),
-                    'sizes' => $width . 'x' . $height,
-                    'purpose' => 'any',
-                ]
-            ],
+            'icons' => $icons,
             'theme_color' => match ($kb->theme_color->value) {
                 'slate' => '#cbd5e1',
                 'gray' => '#d1d5db',
@@ -144,6 +151,48 @@ class KnowledgeBaseController extends Controller
             //     ],
             // ],
         ]);
+    }
+
+    public function svg(Request $request, string $slug, string $name)
+    {
+        $kb = $this->findKBBySlug($slug, true);
+        if ($kb === null)
+        {
+            return response(null, 404);
+        }
+
+        $replacements = [
+            '#6c63ff' => tailwindColor($kb->theme_color, 400),
+            '#e6e6e6' => tailwindColor($kb->theme_color, 700),
+            '#f2f2f2' => tailwindColor($kb->theme_color, 300),
+        ];
+
+        $path = "img/$name.svg";
+        $fullPath = resource_path($path);
+        $slug = str($fullPath)->slug();
+
+        $contents = '';
+        if (Cache::has($slug) && ! app()->isLocal())
+        {
+            $contents = Cache::get($slug);
+        }
+        else {
+            $contents = file_get_contents($fullPath);
+            if ($contents === false)
+            {
+                throw new Exception("Failed to read file at $path !");
+            }
+
+            $contents = str($contents);
+
+            foreach ($replacements as $key => $value) {
+                $contents = $contents->replace($key, $value);
+            }
+
+            Cache::put($slug, $contents, 3600);
+        }
+
+        return response($contents->toString(), headers: [ 'Content-Type' => 'image/svg+xml' ]);
     }
 
 

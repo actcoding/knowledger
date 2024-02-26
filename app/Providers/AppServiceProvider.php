@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Http\Responses\LogoutResponse;
 use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Health\Checks\Checks\CacheCheck;
 use Spatie\Health\Checks\Checks\DebugModeCheck;
@@ -46,5 +47,9 @@ class AppServiceProvider extends ServiceProvider
             ScheduleCheck::new(),
             SecurityAdvisoriesCheck::new(),
         ]);
+
+        Blade::directive('embedSvg', function (string $expression) {
+            return "<?php echo App\\embedSvg($expression); ?>";
+        });
     }
 }

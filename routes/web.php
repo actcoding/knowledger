@@ -22,6 +22,7 @@ $subdomain = config('knowledge-base.domain');
 Route::domain('{slug}.' . $subdomain)->group(function () {
     Route::get('/', [KnowledgeBaseController::class, 'home'])->name('kb.home');
     Route::get('/manifest.json', [KnowledgeBaseController::class, 'manifest'])->name('kb.manifest');
+    Route::get('/svg/{name}', [KnowledgeBaseController::class, 'svg'])->name('kb.svg');
     Route::get('/article/{article}', [KnowledgeBaseController::class, 'article'])->name('kb.article');
 });
 

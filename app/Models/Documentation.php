@@ -38,7 +38,7 @@ class Documentation extends Model
     }
 
     protected $fillable = [
-        'name', 'slug',
+        'name', 'slug', 'status',
         'logo', 'theme_color',
         'password',
         'domains',

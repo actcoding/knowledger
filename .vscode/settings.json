@@ -3,4 +3,9 @@
         "blade": "html"
     },
     "editor.linkedEditing": true,
+
+    "phpactor.config": {
+        "completion.label_formatter": "fqn",
+        "language_server.diagnostic_outsource": false,
+    },
 }

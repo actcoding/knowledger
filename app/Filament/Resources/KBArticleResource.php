@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Actions\KBArticlePreviewTableAction;
 use App\Filament\Forms\StatusSelect;
 use App\Filament\Layouts\Column;
 use App\Filament\Layouts\Wrapper;
@@ -20,6 +19,8 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Enums\FiltersLayout;
@@ -214,7 +215,20 @@ class KBArticleResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ], FiltersLayout::AboveContent)
             ->actions([
-                KBArticlePreviewTableAction::make(),
+                Action::make('preview-public')
+                    ->color('secondary')
+                    ->icon('heroicon-o-eye')
+                    ->label('Public View')
+                    ->link()
+                    ->url(fn (KBArticle $record): string => $record->route(true))
+                    ->openUrlInNewTab(),
+                Action::make('preview-private')
+                    ->color('secondary')
+                    ->icon('heroicon-o-eye-slash')
+                    ->label('Preview')
+                    ->link()
+                    ->url(fn (KBArticle $record): string => $record->route(false))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

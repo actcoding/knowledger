@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Actions\KBPreviewAction;
 use App\Filament\Actions\KBPreviewTableAction;
+use App\Filament\Actions\KBViewTableAction;
+use App\Filament\Forms\StatusSelect;
 use App\Filament\Resources\DocumentationResource\Pages;
 use App\Models\Documentation;
 use App\Util\Colors;
@@ -12,6 +13,7 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Split;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -77,12 +79,17 @@ class DocumentationResource extends Resource
                                         $component->state('');
                                     }),
 
-                                Select::make('theme_color')
-                                    ->required()
-                                    ->native(false)
-                                    ->searchable()
-                                    ->options($colors)
-                                    ->allowHtml(),
+                                Split::make([
+                                    Select::make('theme_color')
+                                        ->required()
+                                        ->native(false)
+                                        ->searchable()
+                                        ->options($colors)
+                                        ->allowHtml(),
+
+                                    StatusSelect::make('status')
+                                        ->required(),
+                                ]),
                             ]),
 
                         FileUpload::make('logo')

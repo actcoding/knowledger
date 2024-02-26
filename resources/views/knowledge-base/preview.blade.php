@@ -33,20 +33,23 @@
                 {{ $kb->name }}
             </p>
 
-            <p class="text-lg font-medium">
-                Welcome to this <strong>Knowledge Base</strong> (KB)
-            </p>
-
-            @livewire(KBSearchBar::class, ['kb' => $kb, 'public' => $public])
-
             @if ($articles->count() > 0)
+                <p class="text-lg font-medium">
+                    Welcome to this <strong>Knowledge Base</strong> (KB)
+                </p>
+
+                @livewire(KBSearchBar::class, ['kb' => $kb, 'public' => $public])
+
                 <p class="text-2xl font-medium mt-12">
                     Featured Articles
                 </p>
             @else
-                {!! file_get_contents(resource_path('img/undraw_empty_re_opql.svg')) !!}
+                <img
+                    src="{{ route('kb.svg', [ 'slug' => $kb->slug, 'name' => 'undraw_empty_re_opql' ]) }}"
+                    width="384"
+                    class="mt-8"
+                />
             @endif
-
 
             <div class="grid grid-cols-4 gap-8">
             @forelse($articles as $article)
@@ -60,10 +63,10 @@
                     </span>
                 </a>
             @empty
-                <p>
-                    Empty
+                <p class="text-center font-medium text-lg col-span-full">
+                    This KB does not have any articles yet …
                 </p>
-            @endforelse
+                @endforelse
             </div>
 
         </div>

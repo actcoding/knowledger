@@ -86,10 +86,10 @@
     <hr class="border-{{ $kb->theme_color }}-300 my-8" />
 
     {{-- Main --}}
-    <main class="grid grid-cols-article gap-x-12 items-baseline mb-48 container mx-auto">
+    <main class="grid grid-cols-article gap-x-12 mb-48 container mx-auto">
 
         {{-- Table of Contents --}}
-        <aside class="prose sticky top-5 bg-{{ $kb->theme_color }}-50 p-4" id="toc">
+        <aside class="prose sticky top-5 bg-{{ $kb->theme_color }}-50 p-4 max-h-[90vh] overflow-y-auto" id="toc">
             <h2>Table of Contents</h2>
         </aside>
 
